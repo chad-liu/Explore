@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>探究題目小幫手</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
+      background: #f0f4f8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    header {
+      width: 100%;
+      background: linear-gradient(135deg, #4a90d9, #357abd);
+      color: white;
+      padding: 16px 24px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    header h1 { font-size: 1.4rem; font-weight: bold; }
+    header p { font-size: 0.85rem; opacity: 0.9; margin-top: 4px; }
+
+    .progress-bar {
+      width: 100%;
+      max-width: 700px;
+      padding: 12px 24px 0;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .step {
+      flex: 1;
+      height: 6px;
+      background: #d0dce8;
+      border-radius: 3px;
+      transition: background 0.4s;
+    }
+    .step.active { background: #4a90d9; }
+    .step-label {
+      font-size: 0.75rem;
+      color: #666;
+      white-space: nowrap;
+    }
+
+    .chat-container {
+      width: 100%;
+      max-width: 700px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 24px;
+      gap: 12px;
+      overflow-y: auto;
+      margin-bottom: 120px;
+    }
+
+    .message {
+      display: flex;
+      gap: 10px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user { flex-direction: row-reverse; }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .message.ai .avatar { background: #4a90d9; }
+    .message.user .avatar { background: #5cb85c; }
+
+    .bubble {
+      max-width: 78%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .message.ai .bubble {
+      background: white;
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      color: #333;
+    }
+
+    .message.user .bubble {
+      background: #4a90d9;
+      border-bottom-right-radius: 4px;
+      color: white;
+    }
+
+    .topic-card {
+      background: linear-gradient(135deg, #f0fff4, #e6f4ea);
+      border: 2px solid #5cb85c;
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin: 8px 0;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .topic-card h3 {
+      color: #3a7d44;
+      font-size: 1rem;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .topic-card p {
+      color: #2d6a4f;
+      font-size: 1.05rem;
+      font-weight: bold;
+      line-height: 1.5;
+    }
+
+    .topic-card .restart-btn {
+      margin-top: 14px;
+      background: #5cb85c;
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-family: inherit;
+    }
+
+    .topic-card .restart-btn:hover { background: #4caa4c; }
+
+    .input-area {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      max-width: 700px;
+      background: white;
+      border-top: 1px solid #dde3ea;
+      padding: 12px 16px;
+      display: flex;
+      gap: 10px;
+      box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+    }
+
+    #userInput {
+      flex: 1;
+      border: 1.5px solid #c0ccd8;
+      border-radius: 24px;
+      padding: 10px 18px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      resize: none;
+      max-height: 120px;
+      overflow-y: auto;
+      line-height: 1.5;
+      transition: border-color 0.2s;
+    }
+
+    #userInput:focus { border-color: #4a90d9; }
+    #userInput:disabled { background: #f5f5f5; }
+
+    #sendBtn {
+      background: #4a90d9;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    #sendBtn:hover:not(:disabled) { background: #357abd; transform: scale(1.05); }
+    #sendBtn:disabled { background: #a0b8d0; cursor: not-allowed; }
+
+    .typing-indicator {
+      display: flex;
+      gap: 5px;
+      padding: 4px 0;
+    }
+
+    .typing-indicator span {
+      width: 8px;
+      height: 8px;
+      background: #aaa;
+      border-radius: 50%;
+      animation: bounce 1.2s infinite;
+    }
+
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-6px); }
+    }
+
+    @media (max-width: 740px) {
+      .input-area { max-width: 100%; }
+      .chat-container { max-width: 100%; padding: 12px 12px; }
+      .progress-bar { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>探究題目小幫手</h1>
+    <p>讓 AI 陪你一步步找到最適合的探究問題</p>
+  </header>
+
+  <div class="progress-bar" id="progressBar">
+    <span class="step-label">進度</span>
+    <div class="step active" id="step1"></div>
+    <div class="step" id="step2"></div>
+    <div class="step" id="step3"></div>
+    <div class="step" id="step4"></div>
+    <div class="step" id="step5"></div>
+  </div>
+
+  <div class="chat-container" id="chatContainer"></div>
+
+  <div class="input-area">
+    <textarea
+      id="userInput"
+      placeholder="輸入你的想法，按 Enter 送出（Shift+Enter 換行）"
+      rows="1"
+    ></textarea>
+    <button id="sendBtn" title="送出">&#9658;</button>
+  </div>
+
+  <script>
+    const chatContainer = document.getElementById('chatContainer');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    let conversationHistory = [];
+    let stepCount = 0;
+    let isStreaming = false;
+
+    // 初始歡迎訊息
+    const welcomeMessage = `你好！我是你的探究題目小幫手 😊
+
+我會陪你一步一步，把你感興趣的方向，變成一個適合深入研究的探究問題。
+
+整個過程大約 5~10 分鐘，我會問你幾個問題，幫助你找到最棒的題目！
+
+先告訴我：**你對什麼主題感興趣，或是有什麼想研究的方向？**（不用想太多，任何想法都可以說說看）`;
+
+    addMessage('ai', welcomeMessage);
+
+    function addMessage(role, text) {
+      const div = document.createElement('div');
+      div.className = `message ${role}`;
+
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar';
+      avatar.textContent = role === 'ai' ? '🤖' : '🙋';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+
+      // 處理粗體 **text**
+      bubble.innerHTML = text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>');
+
+      div.appendChild(avatar);
+      div.appendChild(bubble);
+      chatContainer.appendChild(div);
+      scrollToBottom();
+      return bubble;
+    }
+
+    function addTypingIndicator() {
+      const div = document.createElement('div');
+      div.className = 'message ai';
+      div.id = 'typingIndicator';
+
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar';
+      avatar.textContent = '🤖';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+
+      div.appendChild(avatar);
+      div.appendChild(bubble);
+      chatContainer.appendChild(div);
+      scrollToBottom();
+      return div;
+    }
+
+    function showTopicCard(topicText) {
+      // 從回覆中嘗試抓出最後的題目句
+      const lines = topicText.split('\n').filter(l => l.trim());
+      const topic = lines.find(l =>
+        l.includes('？') && (l.includes('影響') || l.includes('原因') || l.includes('如何') ||
+        l.includes('差異') || l.includes('為什麼') || l.includes('變化'))
+      ) || lines[lines.length - 2] || '你的探究題目';
+
+      const card = document.createElement('div');
+      card.className = 'topic-card';
+      card.innerHTML = `
+        <h3>✅ 你的探究題目確認完成！</h3>
+        <p>${topic.replace(/[「」『』【】]/g, '').trim()}</p>
+        <button class="restart-btn" onclick="restartChat()">重新開始新的題目</button>
+      `;
+      chatContainer.appendChild(card);
+      scrollToBottom();
+    }
+
+    function updateProgress() {
+      stepCount++;
+      const steps = document.querySelectorAll('.step');
+      const active = Math.min(stepCount, 5);
+      for (let i = 0; i < active; i++) {
+        steps[i].classList.add('active');
+      }
+    }
+
+    function scrollToBottom() {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const text = userInput.value.trim();
+      if (!text || isStreaming) return;
+
+      isStreaming = true;
+      sendBtn.disabled = true;
+      userInput.disabled = true;
+      userInput.value = '';
+
+      addMessage('user', text);
+      conversationHistory.push({ role: 'user', content: text });
+      updateProgress();
+
+      const typingEl = addTypingIndicator();
+
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: conversationHistory }),
+        });
+
+        if (!response.ok) throw new Error('伺服器錯誤');
+
+        typingEl.remove();
+        const bubble = addMessage('ai', '');
+        let fullText = '';
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop();
+
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            try {
+              const data = JSON.parse(line.slice(6));
+
+              if (data.text) {
+                fullText += data.text;
+                bubble.innerHTML = fullText
+                  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                  .replace(/\n/g, '<br>');
+                scrollToBottom();
+              }
+
+              if (data.done) {
+                // 移除確認標記文字
+                const cleanText = fullText.replace('[探究題目確認完成]', '').trim();
+                bubble.innerHTML = cleanText
+                  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                  .replace(/\n/g, '<br>');
+
+                conversationHistory.push({ role: 'assistant', content: cleanText });
+
+                if (data.topicConfirmed) {
+                  setTimeout(() => showTopicCard(cleanText), 500);
+                  userInput.disabled = true;
+                  sendBtn.disabled = true;
+                  return;
+                }
+              }
+
+              if (data.error) {
+                bubble.textContent = data.error;
+              }
+            } catch {}
+          }
+        }
+      } catch (err) {
+        typingEl.remove();
+        addMessage('ai', '抱歉，發生了一些問題，請重新整理頁面後再試試看 🙏');
+        console.error(err);
+      } finally {
+        isStreaming = false;
+        sendBtn.disabled = false;
+        userInput.disabled = false;
+        userInput.focus();
+        scrollToBottom();
+      }
+    }
+
+    function restartChat() {
+      conversationHistory = [];
+      stepCount = 0;
+      chatContainer.innerHTML = '';
+      document.querySelectorAll('.step').forEach((s, i) => {
+        s.classList.toggle('active', i === 0);
+      });
+      userInput.disabled = false;
+      sendBtn.disabled = false;
+      addMessage('ai', welcomeMessage);
+      userInput.focus();
+    }
+
+    // Enter 送出，Shift+Enter 換行
+    userInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    sendBtn.addEventListener('click', sendMessage);
+
+    // 自動調整 textarea 高度
+    userInput.addEventListener('input', () => {
+      userInput.style.height = 'auto';
+      userInput.style.height = Math.min(userInput.scrollHeight, 120) + 'px';
+    });
+  </script>
+</body>
+</html>
