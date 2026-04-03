@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>探究題目小幫手</title>
+  <title>探究題目小小幫手</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -14,6 +14,14 @@
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
+    }
+
+    .fixed-top {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
     }
 
     header {
@@ -48,7 +56,9 @@
     .progress-bar {
       width: 100%;
       max-width: 700px;
-      padding: 12px 24px 0;
+      margin: 0 auto;
+      padding: 8px 24px;
+      background: #f0f4f8;
       display: flex;
       gap: 8px;
       align-items: center;
@@ -77,6 +87,7 @@
       padding: 16px 24px;
       gap: 12px;
       overflow-y: auto;
+      margin-top: 110px;
       margin-bottom: 120px;
     }
 
@@ -262,19 +273,20 @@
   </style>
 </head>
 <body>
-  <header style="position:relative;">
-    <h1>探究題目小幫手</h1>
-    <p>讓 AI 陪你一步步找到最適合的探究問題</p>
-    <button class="header-save-btn" onclick="saveConversation()" title="下載對話記錄">💾 儲存對話</button>
-  </header>
-
-  <div class="progress-bar" id="progressBar">
-    <span class="step-label">進度</span>
-    <div class="step active" id="step1"></div>
-    <div class="step" id="step2"></div>
-    <div class="step" id="step3"></div>
-    <div class="step" id="step4"></div>
-    <div class="step" id="step5"></div>
+  <div class="fixed-top">
+    <header style="position:relative;">
+      <h1>探究題目小小幫手</h1>
+      <p>讓 AI 陪你一步步找到最適合的探究問題</p>
+      <button class="header-save-btn" onclick="saveConversation()" title="下載對話記錄">💾 儲存對話</button>
+    </header>
+    <div class="progress-bar" id="progressBar">
+      <span class="step-label">進度</span>
+      <div class="step active" id="step1"></div>
+      <div class="step" id="step2"></div>
+      <div class="step" id="step3"></div>
+      <div class="step" id="step4"></div>
+      <div class="step" id="step5"></div>
+    </div>
   </div>
 
   <div class="chat-container" id="chatContainer"></div>
@@ -298,7 +310,7 @@
     let isStreaming = false;
 
     // 初始歡迎訊息
-    const welcomeMessage = `你好！我是你的探究題目小幫手 😊
+    const welcomeMessage = `你好！我是你的探究題目小小幫手 😊
 
 我會陪你一步一步，把你感興趣的方向，變成一個適合深入研究的探究問題。
 
