@@ -47,10 +47,6 @@ const SYSTEM_PROMPT = `你是一位友善、有耐心的國中小學探究學習
 - 遇到不相關的話題，溫和地把對話帶回探究題目的討論
 - 適時給予小小的稱讚（「這個想法很棒！」「你問到重點了！」）`;
 
-function helloWorld() {
-  return 'Hello, World!';
-}
-
 app.post('/api/chat', async (req, res) => {
   const { messages } = req.body;
 
