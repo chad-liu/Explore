@@ -9,7 +9,9 @@
       "Bash(node /c/Users/user/Desktop/Claude-Explore/server.js)",
       "Bash(netstat -ano)",
       "Bash(taskkill //F //PID 28772)",
-      "Bash(taskkill //F //PID 9096)"
+      "Bash(taskkill //F //PID 9096)",
+      "Bash(curl -s http://localhost:3000/api/tracks)",
+      "mcp__Claude_Preview__preview_start"
     ]
   }
 }
