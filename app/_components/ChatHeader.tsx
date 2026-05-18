@@ -15,13 +15,13 @@ export default function ChatHeader({ onSaveTxt, onSaveHtml }: Props) {
           onClick={onSaveTxt}
           className="bg-white/20 border border-white/40 text-white text-xs rounded-full px-3 py-1.5 hover:bg-white/35 transition-colors cursor-pointer"
         >
-          💾 .txt
+          💾 文字檔
         </button>
         <button
           onClick={onSaveHtml}
           className="bg-white/20 border border-white/40 text-white text-xs rounded-full px-3 py-1.5 hover:bg-white/35 transition-colors cursor-pointer"
         >
-          🌐 .html
+          🌐 網頁
         </button>
       </div>
     </header>
