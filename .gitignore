@@ -43,3 +43,5 @@ next-env.d.ts
 # project planning artifacts
 plan.md
 .claude/
+
+.vercel

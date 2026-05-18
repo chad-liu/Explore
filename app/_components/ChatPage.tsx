@@ -11,23 +11,27 @@ export default function ChatPage() {
     isStreaming,
     stepCount,
     topicConfirmed,
+    confirmedTopic,
     sendMessage,
     restartChat,
-    saveConversation,
+    saveTxt,
+    saveHtml,
   } = useChat();
 
   return (
     <div className="h-screen flex flex-col bg-[#f0f4f8] overflow-hidden">
       <div className="flex-none">
-        <ChatHeader onSave={saveConversation} />
+        <ChatHeader onSaveTxt={saveTxt} onSaveHtml={saveHtml} />
         <ProgressBar stepCount={stepCount} />
       </div>
       <ChatContainer
         messages={messages}
         isStreaming={isStreaming}
         topicConfirmed={topicConfirmed}
+        confirmedTopic={confirmedTopic}
         onRestart={restartChat}
-        onSave={saveConversation}
+        onSaveTxt={saveTxt}
+        onSaveHtml={saveHtml}
         onSend={sendMessage}
         inputDisabled={isStreaming || topicConfirmed}
       />

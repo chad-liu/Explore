@@ -11,8 +11,10 @@ interface Props {
   messages: Message[];
   isStreaming: boolean;
   topicConfirmed: boolean;
+  confirmedTopic: string;
   onRestart: () => void;
-  onSave: () => void;
+  onSaveTxt: () => void;
+  onSaveHtml: () => void;
   onSend: (text: string) => void;
   inputDisabled: boolean;
 }
@@ -21,8 +23,10 @@ export default function ChatContainer({
   messages,
   isStreaming,
   topicConfirmed,
+  confirmedTopic,
   onRestart,
-  onSave,
+  onSaveTxt,
+  onSaveHtml,
   onSend,
   inputDisabled,
 }: Props) {
@@ -31,9 +35,6 @@ export default function ChatContainer({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isStreaming, topicConfirmed]);
-
-  const lastAiMsg =
-    [...messages].reverse().find(m => m.role === 'ai')?.content ?? '';
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -46,7 +47,12 @@ export default function ChatContainer({
           )
         )}
         {topicConfirmed && (
-          <TopicCard lastAiMessage={lastAiMsg} onSave={onSave} onRestart={onRestart} />
+          <TopicCard
+            topic={confirmedTopic}
+            onSaveTxt={onSaveTxt}
+            onSaveHtml={onSaveHtml}
+            onRestart={onRestart}
+          />
         )}
         {!topicConfirmed && (
           <InputArea onSend={onSend} disabled={inputDisabled} />
